@@ -1,41 +1,26 @@
-from rag_pipeline import RAGPipeline
+# Example Usage of RAG Pipeline
 
-# Initialize the RAG pipeline
-rag = RAGPipeline(model_name="all-MiniLM-L6-v2", db_path="./chroma_db")
+# Import necessary libraries
+from rag_pipeline import load_pdf, chunk_text, embed_text, store_in_chromadb, query_chromadb
 
-# Example 1: Load a PDF and store embeddings
-pdf_file = "sample.pdf"  # Replace with your PDF file
-if rag.load_pdf_and_store(pdf_file, chunk_size=500, overlap=50):
-    print("\n✓ PDF loaded and stored successfully!\n")
-    
-    # Example 2: Query the stored documents
-    queries = [
-        "What is the main topic?",
-        "Tell me about key concepts",
-        "Summarize the document"
-    ]
-    
-    for query in queries:
-        results = rag.query(query, top_k=3)
-        rag.display_results(results, top_k=3)
-else:
-    print("Failed to load PDF")
+# Load a PDF document
+pdf_path = 'path/to/your/document.pdf'
+pdf_document = load_pdf(pdf_path)
 
-# Example 3: Load multiple PDFs
-print("\n" + "="*80)
-print("Loading multiple PDFs")
-print("="*80)
+# Chunk the loaded document into manageable parts
+chunks = chunk_text(pdf_document)
 
-pdf_files = ["document1.pdf", "document2.pdf"]
-for pdf in pdf_files:
-    if rag.load_pdf_and_store(pdf, chunk_size=500, overlap=50):
-        print(f"✓ {pdf} loaded successfully")
-    else:
-        print(f"✗ Failed to load {pdf}")
+# Embed the chunks using a suitable embedding function
+embedded_chunks = [embed_text(chunk) for chunk in chunks]
 
-# Query across all documents
-print("\n" + "="*80)
-print("Querying across all documents")
-print("="*80)
-results = rag.query("Find information about X", top_k=5)
-rag.display_results(results, top_k=5)
+# Store the embedded chunks in ChromaDB
+store_in_chromadb(embedded_chunks)
+
+# Query the database with a sample query
+sample_query = 'What is the main topic of the PDF?'
+query_result = query_chromadb(sample_query)
+
+# Display results
+print('Query Results:')
+for result in query_result:
+    print(result) 
